@@ -1,0 +1,240 @@
+
+<!DOCTYPE html>
+	<html>
+		<head>
+		  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+		  <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+		  <script src="https://use.fontawesome.com/b905867220.js"></script>
+		  <link rel="stylesheet" href="https://cdn.jsdelivr.net/jquery.sidr/2.2.1/stylesheets/jquery.sidr.light.min.css">
+		  <style type="text/css">
+			body {
+				font-family: 'Roboto', sans-serif;
+			}
+
+			main {
+			  position: absolute;
+			  top: 50%;
+			  left: 50%;
+			  transform: translate(-50%, -50%);
+			  time {
+			    display: block;
+			    width: 310px;
+			    text-align: center;
+			    color: white;
+			    font-size: 4rem;
+			    font-weight: 900;
+			    text-align: center;
+			  }
+			  button {
+			    padding: .5em 1.25em;
+			    position: absolute;
+			    bottom: 0;
+			    color: white;
+			    border: 1px solid white;
+			    border-radius: .5em;
+			    text-transform: uppercase;
+			    font-size: 1.25rem;
+			    display: inline-block;
+			  }
+			  #toggle {
+			    right: 0
+			  }
+			  #clear {
+			    transition: all 300ms cubic-bezier(.4, .25, .3, 1);
+			    left: 0;
+			    opacity: 0;
+			    pointer-events: none;
+			    &[data-state='visible'] {
+			      opacity: 1;
+			      pointer-events: auto;
+			    }
+			  }
+			}
+
+			main #clear {
+				-webkit-transition: all 300ms cubic-bezier(.4, .25, .3, 1);
+				transition: all 300ms cubic-bezier(.4, .25, .3, 1);
+				left: 0;
+				opacity: 0;
+				pointer-events: none;
+			}
+
+			main #clear[data-state='visible'] {
+				opacity: 1;
+				pointer-events: auto;
+			}
+
+			button:focus {outline:0;}
+
+			.button {
+			    -webkit-transition-duration: 0.4s; /* Safari */
+			    transition-duration: 0.4s;
+			    cursor: pointer;
+			    border-radius: 3px;
+			    width: 10%;
+			}
+
+			.button5 {
+			    background-color: black;
+			    color: white;
+			    border: 2px solid #555555;
+			    padding-left: 10px;
+			    padding-right: 10px;
+			    padding-bottom: 15px;
+			    padding-top: 15px;
+			    font-size: 20px;
+			    text-align: center;
+			}
+
+			.button5:hover {
+			    background-color: white;
+			    color: black;
+			}
+
+			.togg_menu {
+				border:none;
+				outline:none;
+				background:transparent;
+				cursor:pointer;
+			}
+		</style>
+
+		<title>Timer</title>
+
+		<script type='text/javascript'>
+			window.onload=function(){
+			(function timer() {
+			  'use strict';
+
+			  //declare
+			  var output = document.getElementById('timer');
+			  var toggle = document.getElementById('toggle');
+			  var clear = document.getElementById('clear');
+			  var running = false;
+			  var paused = false;
+			  var timer;
+
+			  // timer start time
+			  var then;
+			  // pause duration
+			  var delay;
+			  // pause start time
+			  var delayThen;
+
+
+			  // start timer
+			  var start = function() {
+			    delay = 0;
+			    running = true;
+			    then = Date.now();
+			    timer = setInterval(run, 51);
+			    toggle.innerHTML = 'stop';
+			  };
+
+
+			  // parse time in ms for output
+			  var parseTime = function(elapsed) {
+			    // array of time multiples [hours, min, sec, decimal]
+			    var d = [3600000, 60000, 1000, 10];
+			    var time = [];
+			    var i = 0;
+
+			    while (i < d.length) {
+			      var t = Math.floor(elapsed / d[i]);
+
+			      // remove parsed time for next iteration
+			      elapsed -= t * d[i];
+
+			      // add '0' prefix to m,s,d when needed
+			      t = (i > 0 && t < 10) ? '0' + t : t;
+			      time.push(t);
+			      i++;
+			    }
+
+			    return time;
+			  };
+
+
+			  // run
+			  var run = function() {
+			    // get output array and print
+			    var time = parseTime(Date.now() - then - delay);
+			    output.innerHTML = time[0] + ':' + time[1] + ':' + time[2] + '.' + time[3];
+			  };
+
+
+			  // stop
+			  var stop = function() {
+			    paused = true;
+			    delayThen = Date.now();
+			    toggle.innerHTML = 'resume';
+			    clear.dataset.state = 'visible';
+			    clearInterval(timer);
+
+			    // call one last time to print exact time
+			    run();
+			  };
+
+
+			  // resume
+			  var resume = function() {
+			    paused = false;
+			    delay += Date.now() - delayThen;
+			    timer = setInterval(run, 51);
+			    toggle.innerHTML = 'stop';
+			    clear.dataset.state = '';
+			  };
+
+
+			  // clear
+			  var reset = function() {
+			    running = false;
+			    paused = false;
+			    toggle.innerHTML = 'start';
+			    output.innerHTML = '0:00:00.00';
+			    clear.dataset.state = '';
+			  };
+
+
+			  // evaluate and route
+			  var router = function() {
+			    if (!running) start();
+			    else if (paused) resume();
+			    else stop();
+			  };
+
+			  toggle.addEventListener('click', router);
+			  clear.addEventListener('click', reset);
+
+			})();
+
+			}
+		</script>
+	</head>
+	<body>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/jquery.sidr/2.2.1/jquery.sidr.min.js"></script>
+
+		<a href="#sidr" id="simple-menu" class="togg_menu" style="color: black;"><i class="fa fa-bars fa-2x" aria-hidden="true"></i></a>
+
+		<div id="sidr">
+		  <!-- Your content -->
+		  <ul>
+		    <li><a href="https://www.github.com/arcnz/stopwatch/">Code @ Github</a></li>
+		    <li><a href="https://www.google.com">Timer</a></li>
+		  </ul>
+		</div>
+
+		<main style="position: fixed;">
+		  <time id="timer" style="font-size: 200px; top: 50%; left: 50%;">0:00:00.00</time>
+		  <button id="toggle" class="button button5">start</button>
+		  <button id="clear" class="button button5">clear</button>
+		</main>
+
+		 <script>
+			$(document).ready(function() {
+			  $('#simple-menu').sidr();
+			});
+		</script>
+	</body>
+</html>
